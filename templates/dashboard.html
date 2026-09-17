@@ -1,0 +1,44 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sentiment Dashboard</title>
+  <link rel="stylesheet" href="/static/style.css" />
+  <script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Bulk Sentiment Analysis</h1>
+      <p>Upload a CSV file with a "text" column.</p>
+      <a href="/" class="link">← Single message</a>
+    </header>
+
+    <form method="POST" enctype="multipart/form-data">
+      <input type="file" name="csv" accept=".csv" required />
+      <button type="submit">Analyze</button>
+    </form>
+
+    {% if error %}<p class="error">{{ error }}</p>{% endif %}
+
+    {% if summary %}
+      <h2>Results — {{ total }} rows</h2>
+      <canvas id="chart"></canvas>
+      <script>
+        new Chart(document.getElementById('chart'), {
+          type: 'bar',
+          data: {
+            labels: {{ summary.keys()|list|tojson }},
+            datasets: [{
+              label: 'Count',
+              data: {{ summary.values()|list|tojson }},
+              backgroundColor: ['#2D6A4F', '#C9A961', '#b94a48', '#888']
+            }]
+          },
+          options: { plugins: { legend: { display: false } } }
+        });
+      </script>
+    {% endif %}
+  </div>
+</body>
+</html>

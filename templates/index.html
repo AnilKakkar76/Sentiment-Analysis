@@ -1,0 +1,57 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+  <meta charset="UTF-8" />
+  <title>Sentiment Analyzer</title>
+  <link rel="stylesheet" href="/static/style.css" />
+</head>
+<body>
+  <div class="container">
+    <header>
+      <h1>Sentiment Analyzer</h1>
+      <p>Paste a review or tweet and see how the model classifies it.</p>
+      <a href="/dashboard" class="link">Bulk CSV analysis →</a>
+    </header>
+
+    <form id="form">
+      <textarea id="text" rows="4" placeholder="Type a review..."></textarea>
+      <button type="submit">Analyze</button>
+    </form>
+
+    <div id="result" class="result hidden">
+      <h2 id="label"></h2>
+      <div id="bars"></div>
+    </div>
+  </div>
+
+  <script>
+    const form = document.getElementById('form');
+    const result = document.getElementById('result');
+    const labelEl = document.getElementById('label');
+    const bars = document.getElementById('bars');
+
+    form.addEventListener('submit', async (e) => {
+      e.preventDefault();
+      const text = document.getElementById('text').value.trim();
+      if (!text) return;
+
+      const res = await fetch('/predict', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ text })
+      });
+      const data = await res.json();
+
+      labelEl.textContent = data.label.toUpperCase() + ' (' + (data.confidence * 100).toFixed(0) + '%)';
+      bars.innerHTML = '';
+      for (const [k, v] of Object.entries(data.probabilities)) {
+        const row = document.createElement('div');
+        row.className = 'bar-row';
+        row.innerHTML = '<span>' + k + '</span><div class="bar"><div class="fill" style="width:' + (v * 100) + '%"></div></div><span>' + (v * 100).toFixed(0) + '%</span>';
+        bars.appendChild(row);
+      }
+      result.classList.remove('hidden');
+    });
+  </script>
+</body>
+</html>
